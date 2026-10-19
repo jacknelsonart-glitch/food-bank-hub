@@ -24,6 +24,14 @@ Open http://localhost:3000. A fresh install includes three fictional example foo
 
 Data is stored in a SQLite file (`data/foodbank.db` by default), so hosting needs a server with a persistent disk, such as a small VPS, Fly.io or Railway with a volume.
 
+### Put a test version online
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jacknelsonart-glitch/food-bank-hub)
+
+The button sets up a free test site on [Render](https://render.com) from `render.yaml`. Sign in with GitHub, choose a staff password when asked (the API key is optional), and click **Deploy**. After a few minutes you get a link like `https://food-bank-hub.onrender.com` that works on any computer or phone.
+
+The free plan is for trying things out: the site goes to sleep when nobody has used it for a while (the next visit takes up to a minute to wake it), and anything added to it is wiped when it restarts. The example food banks come back each time. For real use, host it somewhere with a persistent disk.
+
 ### Settings
 
 | Variable | What it does |
@@ -32,6 +40,7 @@ Data is stored in a SQLite file (`data/foodbank.db` by default), so hosting need
 | `OPEN_STAFF_PAGES` | Set to `true` to turn the staff password off, for testing at home only. |
 | `ANTHROPIC_API_KEY` | Turns on AI photo sorting. Without it, barcode and manual entry still work. |
 | `DATABASE_PATH` | Where the SQLite file lives. |
+| `TEST_SITE` | Set to `true` to show a banner saying this is a test version. |
 | `SEED_DEMO` | Set to `false` to skip the example food banks. |
 | `OPEN_FOOD_FACTS_USER_AGENT` | Identifies your site to Open Food Facts, as they ask. |
 

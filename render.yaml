@@ -1,0 +1,20 @@
+# Free test site on Render (https://render.com). See "Put a test version online" in the README.
+# The free plan sleeps when nobody has visited for a while and has no permanent disk,
+# so anything added on the test site is wiped whenever it restarts. Fine for trying it out,
+# not for real use.
+services:
+  - type: web
+    name: food-bank-hub
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: TEST_SITE
+        value: "true"
+      - key: STAFF_PASSWORD
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
