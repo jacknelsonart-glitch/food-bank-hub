@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Food Bank Hub
 
-## Getting Started
+An open source web app for food banks, used by the people who run them, the people who help, and the people who need food.
 
-First, run the development server:
+- **Find food:** a map and list of food banks, showing which are open now or this weekend, with directions and distance from you.
+- **Calendar:** every opening across all food banks, including weekend and one-off sessions, with a feed you can add to your phone's calendar.
+- **Help out:** local businesses sign up to donate surplus food and volunteers sign up to sort or deliver it. Staff approve them.
+- **Sort donations:** scan a barcode (details come from [Open Food Facts](https://world.openfoodfacts.org)) or take a photo (Claude identifies the item). A volunteer checks the suggestion, including the date and allergens, before it goes into stock.
+- **Pack a parcel:** pick items for a household and see how many days of food it gives them and which nutrients it's short of, against UK reference intakes or US Daily Values.
+
+It works on phones and can be added to the home screen.
+
+## Run it
+
+Needs Node.js 20.9 or newer.
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in the values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. A fresh install includes three fictional example food banks so there's something to look at; set `SEED_DEMO=false` to start empty.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Data is stored in a SQLite file (`data/foodbank.db` by default), so hosting needs a server with a persistent disk, such as a small VPS, Fly.io or Railway with a volume.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Settings
 
-## Learn More
+| Variable | What it does |
+| --- | --- |
+| `STAFF_PASSWORD` | Password for the staff pages. Required in production: staff pages stay locked until it's set. Any username works. |
+| `ANTHROPIC_API_KEY` | Turns on AI photo sorting. Without it, barcode and manual entry still work. |
+| `DATABASE_PATH` | Where the SQLite file lives. |
+| `SEED_DEMO` | Set to `false` to skip the example food banks. |
+| `OPEN_FOOD_FACTS_USER_AGENT` | Identifies your site to Open Food Facts, as they ask. |
 
-To learn more about Next.js, take a look at the following resources:
+## Who sees what
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Finding food, the calendar and the sign-up form are public, and nobody needs an account. Sorting donations, packing parcels, the stock list and sign-up details are behind the staff password.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The app stores no information about the people receiving food. The parcel check only asks how many people of each age group a parcel is for.
 
-## Deploy on Vercel
+## How the nutrition check works
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Each item stores nutrients per 100 g, read from Open Food Facts, estimated by AI from a photo (and marked as estimated), or typed in. A parcel's totals are compared with the household's daily needs: the 2,000 kcal reference amounts scaled by each person's typical energy need. "Days of food" is based on calories. A nutrient is flagged as low when it covers much less than the calories do, and only when most of the parcel has data for it. It's a guide for packing balanced parcels, not dietary advice.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Development
+
+```bash
+npm test          # unit tests
+npm run lint
+npm run typecheck
+```
+
+Built with Next.js, React, Tailwind CSS, SQLite (better-sqlite3), Leaflet with OpenStreetMap, and the Anthropic API.
+
+## Ideas for what's next
+
+- Recipient accounts and booking a collection slot
+- Showing recipients what's in stock before they visit
+- Routes for volunteer drivers
+- Alerts to businesses when a food bank runs low on something
+- Postgres for larger, multi-site deployments
+
+## Licence
+
+AGPL-3.0. You can use, change and host it freely; if you run a modified version for others, share your changes.
