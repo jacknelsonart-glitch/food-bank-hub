@@ -1,6 +1,10 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 const STAFF_PAGES = ["/intake", "/parcel", "/staff"];
+
+/** Cookie that keeps staff signed in on a device. */
+export const STAFF_COOKIE = "staff_session";
+export const STAFF_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
 /** Whether a request needs the staff password. Public: finding food, the calendar, and signing up. */
 export function needsStaff(pathname: string, method: string): boolean {
@@ -11,11 +15,28 @@ export function needsStaff(pathname: string, method: string): boolean {
   return true;
 }
 
+function safeEqual(a: string, b: string): boolean {
+  const given = Buffer.from(a);
+  const expected = Buffer.from(b);
+  return given.length === expected.length && timingSafeEqual(given, expected);
+}
+
 /** Checks an HTTP Basic auth header against the staff password. Any username is accepted. */
 export function isStaffAuthorised(authorization: string | null, password: string): boolean {
   if (!authorization?.startsWith("Basic ")) return false;
   const decoded = Buffer.from(authorization.slice(6), "base64").toString("utf8");
-  const given = Buffer.from(decoded.slice(decoded.indexOf(":") + 1));
-  const expected = Buffer.from(password);
-  return given.length === expected.length && timingSafeEqual(given, expected);
+  return safeEqual(decoded.slice(decoded.indexOf(":") + 1), password);
+}
+
+export function isStaffPassword(given: string, password: string): boolean {
+  return safeEqual(given, password);
+}
+
+/** The sign-in cookie's value. Derived from the password, so changing the password signs everyone out. */
+export function staffToken(password: string): string {
+  return createHmac("sha256", password).update("food-bank-hub staff session v1").digest("hex");
+}
+
+export function hasStaffCookie(cookie: string | undefined, password: string): boolean {
+  return cookie !== undefined && safeEqual(cookie, staffToken(password));
 }

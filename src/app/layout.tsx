@@ -17,6 +17,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
       <body className="min-h-screen antialiased">
+        {process.env.TEST_SITE === "true" && (
+          <p className="bg-amber-100 px-4 py-2 text-center text-sm text-amber-900">
+            This is a test version. Please don&apos;t enter real details: everything here is wiped from time to time.
+          </p>
+        )}
         <Nav />
         <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6">{children}</main>
         <footer className="mx-auto max-w-5xl px-4 pb-8 text-sm text-muted">
