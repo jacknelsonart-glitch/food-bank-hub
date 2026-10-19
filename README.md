@@ -12,7 +12,7 @@ It works on phones and can be added to the home screen.
 
 ## Run it
 
-Needs Node.js 20.9 or newer.
+Needs Node.js 22.13 or newer.
 
 ```bash
 npm install
@@ -52,7 +52,7 @@ npm run lint
 npm run typecheck
 ```
 
-Built with Next.js, React, Tailwind CSS, SQLite (better-sqlite3), Leaflet with OpenStreetMap, and the Anthropic API.
+Built with Next.js, React, Tailwind CSS, SQLite (built into Node.js), Leaflet with OpenStreetMap, and the Anthropic API.
 
 ## Ideas for what's next
 

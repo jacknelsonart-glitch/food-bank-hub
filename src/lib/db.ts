@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import type { FoodBank, FoodBankWithSessions, Item, ItemSource, Nutrients, Session, Signup, SignupStatus } from "./types";
 
 const SCHEMA = `
@@ -56,23 +56,22 @@ CREATE TABLE IF NOT EXISTS signups (
 );
 `;
 
-let db: Database.Database | null = null;
+let db: DatabaseSync | null = null;
 
-export function getDb(): Database.Database {
+export function getDb(): DatabaseSync {
   if (db) return db;
   const file = process.env.DATABASE_PATH ?? path.join(process.cwd(), "data", "foodbank.db");
   if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
-  db = new Database(file);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
+  db = new DatabaseSync(file);
+  db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
   db.exec(SCHEMA);
   if (process.env.SEED_DEMO !== "false") seedDemo(db);
   return db;
 }
 
 /** Fictional example food banks so a fresh install has something to show. */
-function seedDemo(conn: Database.Database) {
-  const { n } = conn.prepare("SELECT COUNT(*) AS n FROM food_banks").get() as { n: number };
+function seedDemo(conn: DatabaseSync) {
+  const { n } = conn.prepare("SELECT COUNT(*) AS n FROM food_banks").get() as unknown as { n: number };
   if (n > 0) return;
   const insertBank = conn.prepare(
     "INSERT INTO food_banks (name, address, lat, lng, phone, website, notes, is_demo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
@@ -95,12 +94,17 @@ function seedDemo(conn: Database.Database) {
       [0, "12:00", "15:00", "Weekend food bank"],
     ]],
   ];
-  conn.transaction(() => {
+  conn.exec("BEGIN");
+  try {
     for (const [name, address, lat, lng, notes, sessions] of demo) {
       const { lastInsertRowid } = insertBank.run(name, address, lat, lng, null, null, notes);
       for (const [day, opens, closes, note] of sessions) insertSession.run(lastInsertRowid, day, null, opens, closes, note);
     }
-  })();
+    conn.exec("COMMIT");
+  } catch (err) {
+    conn.exec("ROLLBACK");
+    throw err;
+  }
 }
 
 type BankRow = Omit<FoodBank, "isDemo"> & { is_demo: number };
@@ -118,8 +122,8 @@ const toSession = (r: SessionRow): Session => ({
 
 export function listFoodBanks(): FoodBankWithSessions[] {
   const conn = getDb();
-  const banks = conn.prepare("SELECT * FROM food_banks ORDER BY name").all() as BankRow[];
-  const sessions = (conn.prepare("SELECT * FROM sessions ORDER BY day_of_week, date, opens").all() as SessionRow[]).map(toSession);
+  const banks = conn.prepare("SELECT * FROM food_banks ORDER BY name").all() as unknown as BankRow[];
+  const sessions = (conn.prepare("SELECT * FROM sessions ORDER BY day_of_week, date, opens").all() as unknown as SessionRow[]).map(toSession);
   return banks.map(({ is_demo, ...b }) => ({
     ...b,
     isDemo: is_demo === 1,
@@ -181,7 +185,7 @@ export function listItems(foodBankId: number): Item[] {
   return (
     getDb()
       .prepare("SELECT * FROM items WHERE food_bank_id = ? AND quantity > 0 ORDER BY category, expiry IS NULL, expiry, name")
-      .all(foodBankId) as ItemRow[]
+      .all(foodBankId) as unknown as ItemRow[]
   ).map(toItem);
 }
 
@@ -214,7 +218,7 @@ export function setItemQuantity(id: number, quantity: number): boolean {
 type SignupRow = Omit<Signup, "canDeliver" | "createdAt"> & { can_deliver: number; created_at: string };
 
 export function listSignups(): Signup[] {
-  return (getDb().prepare("SELECT * FROM signups ORDER BY status = 'pending' DESC, created_at DESC").all() as SignupRow[]).map(
+  return (getDb().prepare("SELECT * FROM signups ORDER BY status = 'pending' DESC, created_at DESC").all() as unknown as SignupRow[]).map(
     ({ can_deliver, created_at, ...s }) => ({ ...s, canDeliver: can_deliver === 1, createdAt: created_at }),
   );
 }
