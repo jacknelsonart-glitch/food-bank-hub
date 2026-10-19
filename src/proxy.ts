@@ -4,6 +4,9 @@ import { isStaffAuthorised, needsStaff } from "@/lib/staff-access";
 export function proxy(request: NextRequest) {
   if (!needsStaff(request.nextUrl.pathname, request.method)) return NextResponse.next();
 
+  // For trying the app out on a home network only: anyone who can reach the site gets staff access.
+  if (process.env.OPEN_STAFF_PAGES === "true") return NextResponse.next();
+
   const password = process.env.STAFF_PASSWORD;
   if (!password) {
     // Without a password, staff areas are open in development and closed in production.
