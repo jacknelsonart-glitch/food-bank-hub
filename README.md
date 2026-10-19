@@ -36,7 +36,7 @@ The free plan is for trying things out: the site goes to sleep when nobody has u
 
 | Variable | What it does |
 | --- | --- |
-| `STAFF_PASSWORD` | Password for the staff pages. Required in production: staff pages stay locked until it's set. Any username works. |
+| `STAFF_PASSWORD` | Password for the staff pages. Required in production: staff pages stay locked until it's set. Staff sign in once per device and stay signed in for 30 days. |
 | `OPEN_STAFF_PAGES` | Set to `true` to turn the staff password off, for testing at home only. |
 | `ANTHROPIC_API_KEY` | Turns on AI photo sorting. Without it, barcode and manual entry still work. |
 | `DATABASE_PATH` | Where the SQLite file lives. |
