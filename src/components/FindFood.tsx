@@ -46,6 +46,16 @@ export function FindFood() {
       .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0) || Number(b.open) - Number(a.open));
   }, [banks, now, filter, me]);
 
+  const points = useMemo(
+    () =>
+      rows.map((r) => ({
+        bank: r.bank,
+        open: r.open,
+        subtitle: r.open ? "Open now" : r.next && now ? `Next: ${when(r.next, now)}` : "No upcoming openings",
+      })),
+    [rows, now],
+  );
+
   const locate = () => {
     if (!navigator.geolocation) return setLocError("Your browser can't share your location.");
     setLocating(true);
@@ -80,7 +90,7 @@ export function FindFood() {
       {locError && <p className="text-sm text-warn">{locError}</p>}
 
       <BankMap
-        points={rows.map((r) => ({ bank: r.bank, open: r.open, subtitle: r.open ? "Open now" : r.next ? `Next: ${when(r.next, now!)}` : "No upcoming openings" }))}
+        points={points}
         me={me}
         onSelect={(id) => {
           setSelected(id);
