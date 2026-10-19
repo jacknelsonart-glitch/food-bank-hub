@@ -19,6 +19,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-screen antialiased">
         <Nav />
         <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6">{children}</main>
+        <footer className="mx-auto max-w-5xl px-4 pb-8 text-sm text-muted">
+          Food Bank Hub is free and open source.{" "}
+          <a className="underline" href="https://github.com/jacknelsonart-glitch/food-bank-hub">
+            Source code
+          </a>
+        </footer>
       </body>
     </html>
   );

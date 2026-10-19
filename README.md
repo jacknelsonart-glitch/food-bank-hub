@@ -64,4 +64,4 @@ Built with Next.js, React, Tailwind CSS, SQLite (built into Node.js), Leaflet wi
 
 ## Licence
 
-AGPL-3.0. You can use, change and host it freely; if you run a modified version for others, share your changes.
+AGPL-3.0 (see [LICENSE](LICENSE)). You can use, change and host it freely; if you run a modified version for others, share your changes. The footer's "Source code" link covers this; point it at your own copy if you change the code.
